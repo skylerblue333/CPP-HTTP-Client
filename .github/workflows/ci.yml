@@ -1,9 +1,8 @@
 name: CI
-on: [push, pull_request]
+on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: g++ -std=c++17 -o app src/main.cpp && echo 'Build OK'
-      - run: g++ -std=c++17 -o test_app tests/test_main.cpp && ./test_app
+      - run: cmake . && make && ./test_app
