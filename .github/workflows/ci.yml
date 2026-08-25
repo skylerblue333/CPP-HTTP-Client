@@ -1,8 +1,35 @@
-name: CI
-on: [push]
+name: http-client-ci
+
+on:
+  push:
+    branches: [main, "product/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  verify:
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
-      - run: cmake . && make && ./test_app
+      - uses: actions/checkout@v4
+      - name: Install libcurl headers
+        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+      - name: Configure and build
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel 2
+      - name: Contract tests against local HTTP fixture
+        run: |
+          python3 -m http.server 18081 --bind 127.0.0.1 --directory tests/fixtures >/tmp/sky-http-fixture.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 20); do
+            if curl --fail --silent http://127.0.0.1:18081/fixture.txt >/dev/null; then break; fi
+            sleep 0.25
+          done
+          (cd build && ./test_app)
+      - name: Sanitizer build
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g src/main.cpp -lcurl -o app-sanitized
+          ./app-sanitized ftp://example.com >/dev/null 2>&1 || test "$?" -eq 1
