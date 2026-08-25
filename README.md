@@ -1,44 +1,35 @@
-<!-- PORTFOLIO PROJECT PROFILE: maintained by the repository owner -->
+# Sky HTTP Client
 
-## Project profile and code-audit snapshot
+**Status: engineering beta.** A small C++17/libcurl command-line HTTP GET client with explicit protocol, timeout, redirect, and response-size boundaries.
 
-**What this is:** **CPP-HTTP-Client** is a public repository described as: “Lightweight HTTP client implementation using BSD sockets. #SkyCoin4444 #AI #Blockchain #DevOps #Innovation” Its dominant language signals are **C++ (2 files)**.
+## Implemented
 
-**Why it has value:** Its value is best understood through the implementation evidence currently present in the repository: **16 tracked files** were observed in the shallow audit, with the source structure and existing documentation providing the project’s specific context. This README does not treat a prototype, experiment, or archive as a production system without supporting evidence.
+- Real HTTP and HTTPS GET requests through libcurl.
+- `http://` and `https://` are the only accepted URL schemes.
+- Redirects are limited to three and remain restricted to HTTP(S).
+- 2-second connection timeout and 5-second total request timeout.
+- 1 MiB response-body ceiling.
+- Stable user agent: `sky-http-client/0.1`.
+- Exit code `0` for HTTP 2xx/3xx responses, `4` for other HTTP status codes, `1` for transport/client failures, and `2` for CLI usage errors.
+- CMake C++17 build with warnings treated as errors.
+- Deterministic CI against a local HTTP fixture plus ASan/UBSan compilation.
 
-**Implementation evidence:** 1 test-related file(s) detected; 1 dependency or package manifest(s) detected; 1 build/CI/infrastructure signal(s) detected; and 3 documentation or governance file(s) detected. Test filenames observed include `tests/test_main.cpp`. Dependency or package files include `package.json`. Build, CI, or infrastructure signals include `.github/workflows/ci.yml`.
+## Build and run
 
-**Current status:** The repository is tracked on the `main` branch. The existing source tree, configuration, tests, workflows, and documentation remain authoritative for supported behavior and maturity. A code audit is not a production-readiness certification, and the presence of a test or workflow file does not establish that all checks pass.
+Requires CMake, a C++17 compiler, and libcurl development headers.
 
-**Relationship to the wider portfolio:** This repository is one focused component of the broader Skyler Blue Spillers portfolio across AI, software engineering, cloud and DevOps, cybersecurity, blockchain, finance, education, social systems, and creative work. It may provide a service boundary, implementation pattern, experiment, archive, or reusable idea for related repositories. Treat repositories as technical dependencies only where documented interfaces and verified project requirements support that relationship.
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+./build/app https://example.com/
+```
 
-**Quality and security note:** No obvious secret-like pattern was detected by the limited static scan; this is not a substitute for a security audit. No TODO/FIXME marker was detected in the scanned text files.
+## Scope limitations
 
----
+This is a focused GET client, not a browser or general API SDK. It does **not** implement POST/PUT bodies, authentication helpers, cookie persistence, caching, HTTP/3 policy, certificate pinning, proxy configuration, retries, streaming-to-disk, concurrency, SSRF allowlists, or production service discovery.
 
-# Cpp Http Client
+The scheme restriction alone is not an SSRF defense. Applications accepting untrusted destination URLs must add hostname/IP/network allowlisting and DNS-rebinding protections appropriate to their deployment.
 
-![GitHub stars](https://img.shields.io/github/stars/skylerblue333/CPP-HTTP-Client?style=flat-square)
-![GitHub license](https://img.shields.io/github/license/skylerblue333/CPP-HTTP-Client?style=flat-square)
+## SKYCOIN4444 integration
 
-## 🌟 Overview
-**CPP-HTTP-Client** is a professional-grade project within the **SkyCoin4444** ecosystem. It focuses on delivering high-value solutions in the domain of **C++**.
-
-## 🚀 Key Features
-- **Scalable Architecture**: Designed for enterprise-level growth and performance.
-- **Modern Standards**: Implements best practices for clean code and maintainability.
-- **Robust Integration**: Built to work seamlessly within modern cloud-native environments.
-
-## 🛠️ Technology Stack
-- **Primary Domain**: C++
-- **Ecosystem**: SkyCoin4444 Digital Platform
-
-## 📂 Structure
-The project is organized into a modular structure to ensure clarity and ease of development.
-
-## 👨‍💻 Author
-**Skyler Blue Spillers**
-*Professional Chess Player & Software Engineer*
-
----
-*Powered by SkyCoin4444*
+Use this as a bounded native HTTP utility only where destination trust is established externally. Higher-level service authentication, retry policy, observability, and network egress controls remain integration responsibilities.
